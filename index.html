@@ -10,14 +10,13 @@ body {
   font-family: Arial, Helvetica, sans-serif;
   color: #fff;
 
-  /* ✅ FONA BILDE + TUMŠS PĀRKLĀJUMS */
+  /* FONA BILDE + TUMŠS PĀRKLĀJUMS */
   background-image:
     linear-gradient(rgba(0,0,0,0.75), rgba(0,0,0,0.75)),
-    url("https://talsupsk.lv/wp-content/uploads/2026/01/talsu-pamatskola-1170x878.jpg");
+    url("https://talsupsk.lv/wp-content/uploads/2023/09/Talsu-pamatskola-1024x683.jpg");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  background-attachment: fixed;
 }
 
 h1 {
@@ -31,7 +30,7 @@ table {
   margin: auto;
   border-collapse: collapse;
   font-size: 30px;
-  background: rgba(0, 0, 0, 0.55);
+  background: rgba(0,0,0,0.55);
   border-radius: 12px;
 }
 
@@ -47,9 +46,20 @@ th {
 
 .footer {
   text-align: center;
-  margin-top: 18px;
+  margin: 14px 0 10px;
   font-size: 22px;
   color: #ddd;
+}
+
+/* TIMELINE JOSLA */
+#timeline {
+  width: 100%;
+  text-align: center;
+  padding: 16px 10px;
+  font-size: 26px;
+  color: #ffd700;
+  background: rgba(0,0,0,0.65);
+  letter-spacing: 1px;
 }
 </style>
 </head>
@@ -72,11 +82,19 @@ th {
 
 <div class="footer" id="pageInfo"></div>
 
+<!-- TIMELINE -->
+<div id="timeline">
+  <span id="timelineText"></span>
+</div>
+
 <script>
+// ===============================
+// GOOGLE SHEETS CSV
+// ===============================
 const CSV_URL =
 "https://docs.google.com/spreadsheets/d/e/2PACX-1vR4zOLpFlQgPZ4Lf9cKgWbMCxe8ZZtg2oc9QtE--1FpYK-YiaqBjaQY174sXey8b91m02OlRu-bD1Ax/pub?output=csv";
 
-const ROWS_PER_PAGE = 12;
+const ROWS_PER_PAGE = 20;
 const PAGE_TIME = 7000;
 
 let rows = [];
@@ -106,15 +124,15 @@ async function loadData() {
       vards: c[idxVards],
       uzvards: c[idxUzvards],
       gads: c[idxGads],
-      klase: c[idxKlase] || ""
+      klase: idxKlase >= 0 ? c[idxKlase] : ""
     });
   });
 
   page = 0;
-  render();
+  renderTable();
 }
 
-function render() {
+function renderTable() {
   const tbody = document.getElementById("tableBody");
   tbody.innerHTML = "";
 
@@ -139,9 +157,34 @@ function render() {
   page = (page + 1) % totalPages;
 }
 
+// ===============================
+// TIMELINE
+// ===============================
+const timelineItems = [
+  "1919 – Dibināta Talsu pamatskola",
+  "1924–1925 – Pirmie absolventu izlaidumi",
+  "1940–1950 – Vecāko absolventu paaudze",
+  "1960–1980 – Skolas izaugsmes gadi",
+  "1990–2000 – Pārmaiņu laiks",
+  "2010–2020 – Mūsdienīga skola jaunām paaudzēm",
+  "2026 – Absolventu salidojums, kas vieno paaudzes"
+];
+
+let timelineIndex = 0;
+
+function rotateTimeline() {
+  document.getElementById("timelineText").innerText =
+    timelineItems[timelineIndex];
+  timelineIndex = (timelineIndex + 1) % timelineItems.length;
+}
+
+// START
 loadData();
-setInterval(render, PAGE_TIME);
-setInterval(loadData, 30000);
+rotateTimeline();
+
+setInterval(renderTable, PAGE_TIME);
+setInterval(loadData, 30000);      // dati atjaunojas
+setInterval(rotateTimeline, 6000); // timeline mainās
 </script>
 
 </body>
