@@ -9,14 +9,11 @@ body {
   margin: 0;
   font-family: Arial, Helvetica, sans-serif;
   color: #fff;
-
-  /* FONA BILDE + TUMŠS PĀRKLĀJUMS */
   background-image:
     linear-gradient(rgba(0,0,0,0.75), rgba(0,0,0,0.75)),
     url("https://talsupsk.lv/wp-content/uploads/2026/01/talsu-pamatskola-1170x878.jpg");
   background-size: cover;
   background-position: center;
-  background-repeat: no-repeat;
 }
 
 h1 {
@@ -33,12 +30,10 @@ table {
   background: rgba(0,0,0,0.55);
   border-radius: 12px;
 }
-
 th, td {
   padding: 14px;
   border-bottom: 1px solid #555;
 }
-
 th {
   color: #ffd700;
   text-align: left;
@@ -48,10 +43,9 @@ th {
   text-align: center;
   margin: 14px 0 10px;
   font-size: 22px;
-  color: #ddd;
 }
 
-/* TIMELINE JOSLA */
+/* TIMELINE */
 #timeline {
   width: 100%;
   text-align: center;
@@ -59,7 +53,33 @@ th {
   font-size: 26px;
   color: #ffd700;
   background: rgba(0,0,0,0.65);
-  letter-spacing: 1px;
+}
+#timelineText {
+  transition: opacity 1.6s ease-in-out;
+}
+
+/* PĀRBŪVES LODZIŅŠ */
+#rebuildBox {
+  position: fixed;
+  right: 20px;
+  bottom: 90px;
+  width: 360px;
+  background: rgba(0, 0, 0, 0.75);
+  border-radius: 12px;
+  padding: 16px 18px;
+  font-size: 20px;
+  line-height: 1.45;
+  box-shadow: 0 0 15px rgba(0,0,0,0.6);
+}
+#rebuildTitle {
+  font-size: 22px;
+  font-weight: bold;
+  color: #ffd700;
+  margin-bottom: 10px;
+  text-align: center;
+}
+#rebuildText {
+  transition: opacity 1.5s ease-in-out;
 }
 </style>
 </head>
@@ -82,9 +102,13 @@ th {
 
 <div class="footer" id="pageInfo"></div>
 
-<!-- TIMELINE -->
 <div id="timeline">
   <span id="timelineText"></span>
+</div>
+
+<div id="rebuildBox">
+  <div id="rebuildTitle">Skolas pārbūves stāsts</div>
+  <div id="rebuildText"></div>
 </div>
 
 <script>
@@ -94,19 +118,16 @@ th {
 const CSV_URL =
 "https://docs.google.com/spreadsheets/d/e/2PACX-1vR4zOLpFlQgPZ4Lf9cKgWbMCxe8ZZtg2oc9QtE--1FpYK-YiaqBjaQY174sXey8b91m02OlRu-bD1Ax/pub?output=csv";
 
-const ROWS_PER_PAGE = 10;
+const ROWS_PER_PAGE = 20;
 const PAGE_TIME = 7000;
-
 let rows = [];
 let page = 0;
 
 async function loadData() {
   const res = await fetch(CSV_URL);
   const text = await res.text();
-
   const delimiter = text.includes(";") ? ";" : ",";
   const lines = text.trim().split("\n");
-
   const headers = lines[0].split(delimiter).map(h => h.toLowerCase().trim());
 
   const idxVards = headers.indexOf("vārds");
@@ -115,11 +136,9 @@ async function loadData() {
   const idxKlase = headers.findIndex(h => h.includes("klas"));
 
   rows = [];
-
   lines.slice(1).forEach(line => {
     const c = line.split(delimiter);
     if (!c[idxVards]) return;
-
     rows.push({
       vards: c[idxVards],
       uzvards: c[idxUzvards],
@@ -135,19 +154,16 @@ async function loadData() {
 function renderTable() {
   const tbody = document.getElementById("tableBody");
   tbody.innerHTML = "";
-
   const start = page * ROWS_PER_PAGE;
   const slice = rows.slice(start, start + ROWS_PER_PAGE);
-
   slice.forEach(r => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${r.vards}</td>
-      <td>${r.uzvards}</td>
-      <td>${r.gads}</td>
-      <td>${r.klase}</td>
-    `;
-    tbody.appendChild(tr);
+    tbody.innerHTML += `
+      <tr>
+        <td>${r.vards}</td>
+        <td>${r.uzvards}</td>
+        <td>${r.gads}</td>
+        <td>${r.klase}</td>
+      </tr>`;
   });
 
   const totalPages = Math.max(1, Math.ceil(rows.length / ROWS_PER_PAGE));
@@ -161,31 +177,65 @@ function renderTable() {
 // TIMELINE
 // ===============================
 const timelineItems = [
-  "1919 – Dibināta Talsu pamatskola",
-  "1924–1925 – Pirmie absolventu izlaidumi",
-  "1940–1950 – Vecāko absolventu paaudze",
-  "1960–1980 – Skolas izaugsmes gadi",
-  "1990–2000 – Pārmaiņu laiks",
-  "2022 – Sākās ilgi gaidītā Talsu pamatskolas pārbūve",
-  "2024-.... – Mūsdienīga skola jaunām paaudzēm",
-  "2026 – Absolventu salidojums, kas vieno paaudzes"
+  { text: "1919 – Dibināta Talsu pamatskola", highlight: false },
+  { text: "1924–1925 – Pirmie absolventu izlaidumi", highlight: false },
+  { text: "1940–1950 – Vecāko absolventu paaudze", highlight: false },
+  { text: "1960–1980 – Skolas izaugsmes gadi", highlight: false },
+  { text: "1990–2000 – Pārmaiņu laiks", highlight: false },
+  { text: "2010–2020 – Mūsdienīga skola jaunām paaudzēm", highlight: false },
+  { text: "2022 – Sākās ilgi gaidītā Talsu pamatskolas pārbūve", highlight: true },
+  { text: "2024 – Skola durvis vēra atjaunotā vidē", highlight: false },
+  { text: "2026 – Absolventu salidojums, kas vieno paaudzes", highlight: false }
 ];
 
 let timelineIndex = 0;
-
 function rotateTimeline() {
-  document.getElementById("timelineText").innerText =
-    timelineItems[timelineIndex];
+  const el = document.getElementById("timelineText");
+  const item = timelineItems[timelineIndex];
+  el.style.opacity = 0;
+  setTimeout(() => {
+    el.innerText = item.text;
+    el.style.opacity = 1;
+    el.style.transition = item.highlight
+      ? "opacity 2.2s ease-in-out"
+      : "opacity 0.7s ease-in-out";
+  }, 600);
   timelineIndex = (timelineIndex + 1) % timelineItems.length;
+}
+
+// ===============================
+// PĀRBŪVES STĀSTS (FAKTI)
+// ===============================
+const rebuildStory = [
+  "2022. gada otrajā pusē sākās ilgi gaidītā Talsu pamatskolas pārbūve.",
+  "Pārbūvētas un paplašinātas skolas telpas, izbūvētas jaunas klases virs zāles.",
+  "Modernizēta ventilācija, apkure, ūdensapgāde un drošības sistēmas.",
+  "Ieviesti vides pieejamības un universālā dizaina risinājumi.",
+  "Pārbūves laikā mācības notika citās telpās Talsos un Vandzenē.",
+  "2024. gadā skolēni atgriezās atjaunotā un mūsdienīgā skolā.",
+  "Tradīcijas saglabājot – nākotni veidojot."
+];
+
+let rebuildIndex = 0;
+function rotateRebuildText() {
+  const el = document.getElementById("rebuildText");
+  el.style.opacity = 0;
+  setTimeout(() => {
+    el.innerText = rebuildStory[rebuildIndex];
+    el.style.opacity = 1;
+    rebuildIndex = (rebuildIndex + 1) % rebuildStory.length;
+  }, 1200);
 }
 
 // START
 loadData();
 rotateTimeline();
+rotateRebuildText();
 
 setInterval(renderTable, PAGE_TIME);
-setInterval(loadData, 30000);      // dati atjaunojas
-setInterval(rotateTimeline, 6000); // timeline mainās
+setInterval(loadData, 30000);
+setInterval(rotateTimeline, 6000);
+setInterval(rotateRebuildText, 7000);
 </script>
 
 </body>
