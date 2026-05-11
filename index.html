@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="lv">
+<head>
+<meta charset="UTF-8">
+<title>Ieradušies absolventi</title>
+
+<style>
+body {
+  margin: 0;
+  background: #000;
+  color: #fff;
+  font-family: Arial, Helvetica, sans-serif;
+}
+h1 {
+  text-align: center;
+  font-size: 48px;
+  margin: 30px 0 20px;
+}
+table {
+  width: 92%;
+  margin: auto;
+  border-collapse: collapse;
+  font-size: 30px;
+}
+th, td {
+  padding: 14px;
+  border-bottom: 1px solid #444;
+}
+th {
+  color: #ffd700;
+  text-align: left;
+}
+.footer {
+  text-align: center;
+  margin-top: 18px;
+  font-size: 22px;
+  color: #aaa;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Ieradušies absolventi</h1>
+
+<table>
+<thead>
+<tr>
+  <th>Vārds</th>
+  <th>Uzvārds</th>
+  <th>Izlaiduma gads</th>
+  <th>Klase</th>
+</tr>
+</thead>
+<tbody id="tableBody"></tbody>
+</table>
+
+<div class="footer" id="pageInfo"></div>
+
+<script>
+const CSV_URL =
+"https://docs.google.com/spreadsheets/d/e/2PACX-1vR4zOLpFlQgPZ4Lf9cKgWbMCxe8ZZtg2oc9QtE--1FpYK-YiaqBjaQY174sXey8b91m02OlRu-bD1Ax/pub?output=csv";
+
+const ROWS_PER_PAGE = 20;
+const PAGE_TIME = 7000;
+
+let rows = [];
+let page = 0;
+
+async function loadData() {
+  const res = await fetch(CSV_URL);
+  const text = await res.text();
+
+  const delimiter = text.includes(";") ? ";" : ",";
+  const lines = text.trim().split("\n");
+
+  const headers = lines[0].split(delimiter).map(h => h.toLowerCase());
+
+  const idxVards = headers.indexOf("vārds");
+  const idxUzvards = headers.indexOf("uzvārds");
+  const idxGads = headers.findIndex(h => h.includes("izlaid"));
+  const idxKlase = headers.indexOf("klase");
+
+  rows = [];
+
+  lines.slice(1).forEach(line => {
+    const c = line.split(delimiter);
+    if (!c[idxVards]) return;
+
+    rows.push({
+      vards: c[idxVards],
+      uzvards: c[idxUzvards],
+      gads: c[idxGads],
+      klase: c[idxKlase]
+    });
+  });
+
+  page = 0;
+  render();
+}
+
+function render() {
+  const tbody = document.getElementById("tableBody");
+  tbody.innerHTML = "";
+
+  const start = page * ROWS_PER_PAGE;
+  const slice = rows.slice(start, start + ROWS_PER_PAGE);
+
+  slice.forEach(r => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${r.vards}</td>
+      <td>${r.uzvards}</td>
+      <td>${r.gads}</td>
+      <td>${r.klase}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  const totalPages = Math.max(1, Math.ceil(rows.length / ROWS_PER_PAGE));
+  document.getElementById("pageInfo").innerText =
+    `Lapa ${page + 1} no ${totalPages} • Kopā ieradušies: ${rows.length}`;
+
+  page = (page + 1) % totalPages;
+}
+
+loadData();
+setInterval(render, PAGE_TIME);
+setInterval(loadData, 30000);
+</script>
+
+</body>
+</html>
