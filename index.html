@@ -9,22 +9,40 @@ body {
   margin: 0;
   font-family: Arial, Helvetica, sans-serif;
   color: #fff;
-
-  /* FONA BILDE + TUMŠS PĀRKLĀJUMS */
   background-image:
     linear-gradient(rgba(0,0,0,0.75), rgba(0,0,0,0.75)),
     url("https://talsupsk.lv/wp-content/uploads/2026/01/talsu-pamatskola-1170x878.jpg");
   background-size: cover;
   background-position: center;
-  background-repeat: no-repeat;
 }
 
+/* ======= PULKSTENIS ======= */
+#clockBox {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: rgba(0,0,0,0.65);
+  padding: 12px 16px;
+  border-radius: 10px;
+  text-align: center;
+}
+#clockTime {
+  font-size: 34px;
+  font-weight: bold;
+  color: #ffd700;
+}
+#clockDate {
+  font-size: 16px;
+}
+
+/* ======= VIRSRaksts ======= */
 h1 {
   text-align: center;
-  font-size: 48px;
+  font-size: 46px;
   margin: 30px 0 20px;
 }
 
+/* ======= TABULA ======= */
 table {
   width: 92%;
   margin: auto;
@@ -33,25 +51,23 @@ table {
   background: rgba(0,0,0,0.55);
   border-radius: 12px;
 }
-
 th, td {
   padding: 14px;
   border-bottom: 1px solid #555;
 }
-
 th {
   color: #ffd700;
   text-align: left;
 }
 
+/* ======= FOOTER ======= */
 .footer {
   text-align: center;
-  margin: 14px 0 10px;
+  margin: 12px 0;
   font-size: 22px;
-  color: #ddd;
 }
 
-/* TIMELINE JOSLA */
+/* ======= TIMELINE ======= */
 #timeline {
   width: 100%;
   text-align: center;
@@ -59,12 +75,17 @@ th {
   font-size: 26px;
   color: #ffd700;
   background: rgba(0,0,0,0.65);
-  letter-spacing: 1px;
 }
 </style>
 </head>
 
 <body>
+
+<!-- PULKSTENIS -->
+<div id="clockBox">
+  <div id="clockTime"></div>
+  <div id="clockDate"></div>
+</div>
 
 <h1>Ieradušies absolventi</h1>
 
@@ -88,105 +109,68 @@ th {
 </div>
 
 <script>
-// ===============================
-// GOOGLE SHEETS CSV
-// ===============================
+/* ======= PULKSTENIS ======= */
+function updateClock() {
+  const now = new Date();
+  clockTime.innerText = now.toLocaleTimeString("lv-LV",{hour:"2-digit",minute:"2-digit"});
+  clockDate.innerText = now.toLocaleDateString("lv-LV",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+}
+updateClock();
+setInterval(updateClock,1000);
+
+/* ======= CSV ======= */
 const CSV_URL =
 "https://docs.google.com/spreadsheets/d/e/2PACX-1vR4zOLpFlQgPZ4Lf9cKgWbMCxe8ZZtg2oc9QtE--1FpYK-YiaqBjaQY174sXey8b91m02OlRu-bD1Ax/pub?output=csv";
 
 const ROWS_PER_PAGE = 10;
-const PAGE_TIME = 7000;
-
-let rows = [];
-let page = 0;
+let rows = [], page = 0;
 
 async function loadData() {
-  const res = await fetch(CSV_URL);
-  const text = await res.text();
-
-  const delimiter = text.includes(";") ? ";" : ",";
+  const text = await (await fetch(CSV_URL)).text();
+  const d = text.includes(";") ? ";" : ",";
   const lines = text.trim().split("\n");
+  rows = lines.slice(1).map(r=>r.split(d)).filter(r=>r[0]);
+  render();
+}
 
-  const headers = lines[0].split(delimiter).map(h => h.toLowerCase().trim());
-
-  const idxVards = headers.indexOf("vārds");
-  const idxUzvards = headers.indexOf("uzvārds");
-  const idxGads = headers.findIndex(h => h.includes("izlaid"));
-  const idxKlase = headers.findIndex(h => h.includes("klas"));
-
-  rows = [];
-
-  lines.slice(1).forEach(line => {
-    const c = line.split(delimiter);
-    if (!c[idxVards]) return;
-
-    rows.push({
-      vards: c[idxVards],
-      uzvards: c[idxUzvards],
-      gads: c[idxGads],
-      klase: idxKlase >= 0 ? c[idxKlase] : ""
+function render() {
+  tableBody.innerHTML = "";
+  rows.slice(page*ROWS_PER_PAGE,(page+1)*ROWS_PER_PAGE)
+    .forEach(r=>{
+      tableBody.innerHTML += `<tr>
+        <td>${r[0]}</td>
+        <td>${r[1]}</td>
+        <td>${r[2]}</td>
+        <td>${r[3]}</td>
+      </tr>`;
     });
-  });
-
-  page = 0;
-  renderTable();
+  pageInfo.innerText = `Lapa ${page+1} no ${Math.ceil(rows.length/ROWS_PER_PAGE)} • Kopā ieradušies: ${rows.length}`;
+  page = (page+1)%Math.ceil(rows.length/ROWS_PER_PAGE);
 }
-
-function renderTable() {
-  const tbody = document.getElementById("tableBody");
-  tbody.innerHTML = "";
-
-  const start = page * ROWS_PER_PAGE;
-  const slice = rows.slice(start, start + ROWS_PER_PAGE);
-
-  slice.forEach(r => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${r.vards}</td>
-      <td>${r.uzvards}</td>
-      <td>${r.gads}</td>
-      <td>${r.klase}</td>
-    `;
-    tbody.appendChild(tr);
-  });
-
-  const totalPages = Math.max(1, Math.ceil(rows.length / ROWS_PER_PAGE));
-  document.getElementById("pageInfo").innerText =
-    `Lapa ${page + 1} no ${totalPages} • Kopā ieradušies: ${rows.length}`;
-
-  page = (page + 1) % totalPages;
-}
-
-// ===============================
-// TIMELINE
-// ===============================
-const timelineItems = [
-  "1919 – Dibināta Talsu pamatskola",
-  "1924–1925 – Pirmie absolventu izlaidumi",
-  "1940–1950 – Vecāko absolventu paaudze",
-  "1960–1980 – Skolas izaugsmes gadi",
-  "1990–2000 – Pārmaiņu laiks",
-  "2022 – Sākās ilgi gaidītā Talsu pamatskolas pārbūve",
-  "2024-.... – Mūsdienīga skola jaunām paaudzēm",
-  "2026 – Absolventu salidojums, kas vieno paaudzes"
-];
-
-let timelineIndex = 0;
-
-function rotateTimeline() {
-  document.getElementById("timelineText").innerText =
-    timelineItems[timelineIndex];
-  timelineIndex = (timelineIndex + 1) % timelineItems.length;
-}
-
-// START
 loadData();
-rotateTimeline();
+setInterval(loadData,30000);
+setInterval(render,7000);
 
-setInterval(renderTable, PAGE_TIME);
-setInterval(loadData, 30000);      // dati atjaunojas
-setInterval(rotateTimeline, 6000); // timeline mainās
+/* ======= TIMELINE ======= */
+const timeline = [
+ "1919 – Dibināta Talsu pamatskola",
+ "1924–1925 – Pirmie absolventu izlaidumi",
+ "1940–1950 – Vecāko absolventu paaudze",
+ "1960–1980 – Skolas izaugsmes gadi",
+ "1990–2000 – Pārmaiņu laiks",
+ "2022 – Sākās skolas pārbūve",
+ "2024 – Atjaunota mūsdienīga skola",
+ "2026 – Absolventu salidojums"
+];
+let ti=0;
+function rotateTimeline(){
+  timelineText.innerText = timeline[ti];
+  ti=(ti+1)%timeline.length;
+}
+rotateTimeline();
+setInterval(rotateTimeline,6000);
 </script>
 
 </body>
 </html>
+``
