@@ -16,7 +16,7 @@ body {
   background-position: center;
 }
 
-/* ======= PULKSTENIS ======= */
+/* ===== PULKSTENIS ===== */
 #clockBox {
   position: fixed;
   top: 20px;
@@ -35,16 +35,16 @@ body {
   font-size: 16px;
 }
 
-/* ======= VIRSRaksts ======= */
+/* ===== VIRSRaksts ===== */
 h1 {
   text-align: center;
   font-size: 46px;
   margin: 30px 0 20px;
 }
 
-/* ======= TABULA ======= */
+/* ===== TABULA ===== */
 table {
-  width: 92%;
+  width: 90%;
   margin: auto;
   border-collapse: collapse;
   font-size: 30px;
@@ -60,116 +60,12 @@ th {
   text-align: left;
 }
 
-/* ======= FOOTER ======= */
+/* ===== FOOTER ===== */
 .footer {
   text-align: center;
   margin: 12px 0;
   font-size: 22px;
 }
 
-/* ======= TIMELINE ======= */
+/* ===== TIMELINE ===== */
 #timeline {
-  width: 100%;
-  text-align: center;
-  padding: 16px 10px;
-  font-size: 26px;
-  color: #ffd700;
-  background: rgba(0,0,0,0.65);
-}
-</style>
-</head>
-
-<body>
-
-<!-- PULKSTENIS -->
-<div id="clockBox">
-  <div id="clockTime"></div>
-  <div id="clockDate"></div>
-</div>
-
-<h1>Ieradušies absolventi</h1>
-
-<table>
-<thead>
-<tr>
-  <th>Vārds</th>
-  <th>Uzvārds</th>
-  <th>Izlaiduma gads</th>
-</tr>
-</thead>
-<tbody id="tableBody"></tbody>
-</table>
-
-<div class="footer" id="pageInfo"></div>
-
-<!-- TIMELINE -->
-<div id="timeline">
-  <span id="timelineText"></span>
-</div>
-
-<script>
-/* ======= PULKSTENIS ======= */
-function updateClock() {
-  const now = new Date();
-  clockTime.innerText = now.toLocaleTimeString("lv-LV",{hour:"2-digit",minute:"2-digit"});
-  clockDate.innerText = now.toLocaleDateString("lv-LV",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
-}
-updateClock();
-setInterval(updateClock,1000);
-
-/* ======= CSV ======= */
-const CSV_URL =
-"https://docs.google.com/spreadsheets/d/e/2PACX-1vR4zOLpFlQgPZ4Lf9cKgWbMCxe8ZZtg2oc9QtE--1FpYK-YiaqBjaQY174sXey8b91m02OlRu-bD1Ax/pub?output=csv";
-
-const ROWS_PER_PAGE = 10;
-let rows = [], page = 0;
-
-async function loadData() {
-  const text = await (await fetch(CSV_URL)).text();
-  const d = text.includes(";") ? ";" : ",";
-  const lines = text.trim().split("\n");
-  rows = lines.slice(1).map(r=>r.split(d)).filter(r=>r[0]);
-  render();
-}
-
-function render() {
-  tableBody.innerHTML = "";
-  rows.slice(page*ROWS_PER_PAGE,(page+1)*ROWS_PER_PAGE)
-    .forEach(r=>{
-      tableBody.innerHTML += `<tr>
-        <td>${r[0]}</td>
-        <td>${r[1]}</td>
-        <td>${r[2]}</td>
-        <td>${r[3]}</td>
-      </tr>`;
-    });
-  pageInfo.innerText = `Lapa ${page+1} no ${Math.ceil(rows.length/ROWS_PER_PAGE)} • Kopā ieradušies: ${rows.length}`;
-  page = (page+1)%Math.ceil(rows.length/ROWS_PER_PAGE);
-}
-loadData();
-setInterval(loadData,30000);
-setInterval(render,7000);
-
-/* ======= TIMELINE ======= */
-const timeline = [
- "1919 – Dibināta Talsu pamatskola",
- "1924–1925 – Pirmie absolventu izlaidumi",
- "1940–1950 – Vecāko absolventu paaudze",
- "1960–1980 – Skolas izaugsmes gadi",
- "1990–2000 – Pārmaiņu laiks",
- "2022 – Sākās skolas pārbūve",
- "2024 – Atjaunota mūsdienīga skola",
- "2026 – Absolventu salidojums"
-];
-let ti=0;
-function rotateTimeline(){
-  timelineText.innerText = timeline[ti];
-  ti=(ti+1)%timeline.length;
-}
-rotateTimeline();
-setInterval(rotateTimeline,6000);
-</script>
-
-</body>
-</html>
-``
