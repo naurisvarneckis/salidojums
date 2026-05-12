@@ -12,13 +12,13 @@ body {
   min-height: 100vh;
 
   background-image:
-    linear-gradient(rgba(0,0,0,0.72), rgba(0,0,0,0.72)),
+    linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)),
     url("https://talsupsk.lv/wp-content/uploads/2026/01/talsu-pamatskola-1170x878.jpg");
   background-size: cover;
   background-position: center;
 }
 
-/* ====== PULKSTENIS ====== */
+/* ======= PULKSTENIS ======= */
 #clockBox {
   position: fixed;
   top: 20px;
@@ -38,39 +38,39 @@ body {
   font-size: 16px;
 }
 
-/* ====== LAYOUT ====== */
+/* ======= LAYOUT ======= */
 .main {
-  min-height: calc(100vh - 80px);
+  min-height: calc(100vh - 90px);
   display: flex;
   flex-direction: column;
   justify-content: center;
 }
 
-/* ====== VIRSRaksts ====== */
+/* ======= VIRSRaksts ======= */
 h1 {
   text-align: center;
-  font-size: 46px;
-  margin: 0 0 25px;
+  font-size: 48px;
+  margin-bottom: 25px;
 }
 
-/* ====== TABULA (CENTRĒTA) ====== */
+/* ======= TABULA (TĪRI CENTRĒTA) ======= */
 .table-wrap {
   display: flex;
   justify-content: center;
 }
 
 table {
-  width: 85%;
-  max-width: 1200px;
+  width: 900px;            /* 👈 tieši 3 kolonnām */
+  max-width: 90%;
   border-collapse: collapse;
-  font-size: 30px;
+  font-size: 32px;
   background: rgba(0,0,0,0.55);
   border-radius: 14px;
   overflow: hidden;
 }
 
 th, td {
-  padding: 16px 20px;
+  padding: 16px 24px;
   border-bottom: 1px solid rgba(255,255,255,0.15);
 }
 
@@ -79,17 +79,18 @@ th {
   text-align: left;
 }
 
+/* ======= FOOTER ======= */
 .footer {
   text-align: center;
-  margin: 14px 0 0;
-  font-size: 20px;
+  margin-top: 14px;
+  font-size: 22px;
   color: #ddd;
 }
 
-/* ====== TIMELINE ====== */
+/* ======= TIMELINE ======= */
 #timeline {
   width: 100%;
-  margin-top: 20px;
+  margin-top: 24px;
   padding: 16px 10px;
   text-align: center;
   font-size: 24px;
@@ -134,7 +135,7 @@ th {
 </div>
 
 <script>
-/* ====== PULKSTENIS ====== */
+/* ======= PULKSTENIS ======= */
 function updateClock() {
   const now = new Date();
   clockTime.textContent =
@@ -150,7 +151,7 @@ function updateClock() {
 updateClock();
 setInterval(updateClock, 1000);
 
-/* ====== CSV ====== */
+/* ======= CSV ======= */
 const CSV_URL =
 "https://docs.google.com/spreadsheets/d/e/2PACX-1vR4zOLpFlQgPZ4Lf9cKgWbMCxe8ZZtg2oc9QtE--1FpYK-YiaqBjaQY174sXey8b91m02OlRu-bD1Ax/pub?output=csv";
 
@@ -160,12 +161,11 @@ let page = 0;
 
 async function loadData() {
   const text = await (await fetch(CSV_URL)).text();
-  const delimiter = text.includes(";") ? ";" : ",";
+  const d = text.includes(";") ? ";" : ",";
   const lines = text.trim().split("\n");
 
-  // CSV: Vārds | Uzvārds | Izlaiduma gads
   rows = lines.slice(1)
-    .map(l => l.split(delimiter))
+    .map(r => r.split(d))
     .filter(r => r[0])
     .map(r => ({
       vards: r[0],
@@ -202,7 +202,7 @@ loadData();
 setInterval(loadData, 30000);
 setInterval(render, 7000);
 
-/* ====== TIMELINE ====== */
+/* ======= TIMELINE ======= */
 const timeline = [
   "1919 – Dibināta Talsu pamatskola",
   "1924–1925 – Pirmie absolventu izlaidumi",
