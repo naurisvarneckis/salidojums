@@ -18,7 +18,7 @@ body {
   background-position: center;
 }
 
-/* ======= PULKSTENIS ======= */
+/* ===== PULKSTENIS ===== */
 #clockBox {
   position: fixed;
   top: 20px;
@@ -27,7 +27,6 @@ body {
   padding: 14px 18px;
   border-radius: 12px;
   text-align: center;
-  z-index: 10;
 }
 #clockTime {
   font-size: 34px;
@@ -38,7 +37,7 @@ body {
   font-size: 16px;
 }
 
-/* ======= LAYOUT ======= */
+/* ===== LAYOUT ===== */
 .main {
   min-height: calc(100vh - 90px);
   display: flex;
@@ -46,21 +45,21 @@ body {
   justify-content: center;
 }
 
-/* ======= VIRSRaksts ======= */
+/* ===== VIRSRaksts ===== */
 h1 {
   text-align: center;
   font-size: 48px;
   margin-bottom: 25px;
 }
 
-/* ======= TABULA (TĪRI CENTRĒTA) ======= */
+/* ===== TABULA ===== */
 .table-wrap {
   display: flex;
   justify-content: center;
 }
 
 table {
-  width: 900px;            /* 👈 tieši 3 kolonnām */
+  width: 850px;
   max-width: 90%;
   border-collapse: collapse;
   font-size: 32px;
@@ -79,7 +78,7 @@ th {
   text-align: left;
 }
 
-/* ======= FOOTER ======= */
+/* ===== FOOTER ===== */
 .footer {
   text-align: center;
   margin-top: 14px;
@@ -87,7 +86,7 @@ th {
   color: #ddd;
 }
 
-/* ======= TIMELINE ======= */
+/* ===== TIMELINE ===== */
 #timeline {
   width: 100%;
   margin-top: 24px;
@@ -135,7 +134,7 @@ th {
 </div>
 
 <script>
-/* ======= PULKSTENIS ======= */
+/* ===== PULKSTENIS ===== */
 function updateClock() {
   const now = new Date();
   clockTime.textContent =
@@ -151,11 +150,11 @@ function updateClock() {
 updateClock();
 setInterval(updateClock, 1000);
 
-/* ======= CSV ======= */
+/* ===== CSV ===== */
 const CSV_URL =
 "https://docs.google.com/spreadsheets/d/e/2PACX-1vR4zOLpFlQgPZ4Lf9cKgWbMCxe8ZZtg2oc9QtE--1FpYK-YiaqBjaQY174sXey8b91m02OlRu-bD1Ax/pub?output=csv";
 
-const ROWS_PER_PAGE = 10;
+const ROWS_PER_PAGE = 5;   // ✅ tikai 5 ieraksti
 let rows = [];
 let page = 0;
 
@@ -170,8 +169,9 @@ async function loadData() {
     .map(r => ({
       vards: r[0],
       uzvards: r[1],
-      gads: r[2]
-    }));
+      gads: Number(r[2])
+    }))
+    .sort((a, b) => a.gads - b.gads); // ✅ sakārto pēc gada
 
   page = 0;
   render();
@@ -202,7 +202,7 @@ loadData();
 setInterval(loadData, 30000);
 setInterval(render, 7000);
 
-/* ======= TIMELINE ======= */
+/* ===== TIMELINE ===== */
 const timeline = [
   "1919 – Dibināta Talsu pamatskola",
   "1924–1925 – Pirmie absolventu izlaidumi",
@@ -213,12 +213,14 @@ const timeline = [
   "2024 – Atjaunota mūsdienīga skola",
   "2026 – Absolventu salidojums"
 ];
+
 let ti = 0;
 
 function rotateTimeline() {
   timelineText.textContent = timeline[ti];
   ti = (ti + 1) % timeline.length;
 }
+
 rotateTimeline();
 setInterval(rotateTimeline, 6000);
 </script>
