@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Ieradušies absolventi</title>
 
 <style>
@@ -70,9 +71,20 @@ h1 {
 .table-wrapper {
   width: 70%;
   max-width: 1200px;
+  height: 55vh;
   overflow: hidden;
+  position: relative;
 }
 
+/* Scroll container */
+.scroll-content {
+  position: absolute;
+  width: 100%;
+  will-change: transform;
+  animation: scrollUp linear infinite;
+}
+
+/* TABLE */
 table {
   width: 100%;
   border-collapse: collapse;
@@ -88,27 +100,34 @@ th, td {
 }
 th { color: gold; }
 
-tbody {
-  display: block;
-}
-
-thead, tbody tr {
-  display: table;
-  width: 100%;
-  table-layout: fixed;
-}
-
-/* SCROLL */
-.scroll {
-  animation: scrollUp linear infinite;
-}
-
+/* SCROLL ANIMATION */
 @keyframes scrollUp {
   0% { transform: translateY(0); }
   100% { transform: translateY(-50%); }
 }
 
-/* FOOT */
+/* FADE TOP/BOTTOM (TV EFFECT) */
+.table-wrapper::before,
+.table-wrapper::after {
+  content:"";
+  position:absolute;
+  left:0;
+  width:100%;
+  height:70px;
+  z-index:5;
+}
+
+.table-wrapper::before {
+  top:0;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent);
+}
+
+.table-wrapper::after {
+  bottom:0;
+  background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+}
+
+/* TIMELINE */
 #timeline {
   position: fixed;
   bottom: 0;
@@ -131,20 +150,25 @@ thead, tbody tr {
 <div id="popup"></div>
 
 <div class="main">
+
   <h1>Ieradušies absolventi</h1>
 
   <div class="table-wrapper">
-    <table>
-      <thead>
-        <tr>
-          <th>Vārds</th>
-          <th>Uzvārds</th>
-          <th>Gads</th>
-        </tr>
-      </thead>
-      <tbody id="scrollBody"></tbody>
-    </table>
+    <div class="scroll-content" id="scrollContent">
+      <table>
+        <thead>
+          <tr>
+            <th>Vārds</th>
+            <th>Uzvārds</th>
+            <th>Gads</th>
+          </tr>
+        </thead>
+
+        <tbody id="scrollBody"></tbody>
+      </table>
+    </div>
   </div>
+
 </div>
 
 <div id="timeline">
@@ -160,56 +184,56 @@ function updateClock(){
   clockDate.textContent =
     n.toLocaleDateString("lv-LV",{day:"numeric",month:"long"});
 }
-setInterval(updateClock,1000); updateClock();
+setInterval(updateClock,1000);
+updateClock();
 
-// DATA
+// CSV
 const CSV_URL="https://docs.google.com/spreadsheets/d/e/2PACX-1vR4zOLpFlQgPZ4Lf9cKgWbMCxe8ZZtg2oc9QtE--1FpYK-YiaqBjaQY174sXey8b91m02OlRu-bD1Ax/pub?output=csv";
 
 let lastCount=0;
 
+// LOAD DATA
 async function load(){
   const txt=await (await fetch(CSV_URL)).text();
-  const lines=txt.trim().split("\n");
-  const d = txt.includes(";")?";":",";
+  const d=txt.includes(";")?";":",";
 
-  let rows = lines.slice(1)
+  const rows=txt.trim().split("\n")
+    .slice(1)
     .map(r=>r.split(d))
     .filter(r=>r.length>=3)
-    .map(r=>{
-      return {
-        v:r[0], u:r[1], g:Number(r[2])
-      };
-    })
+    .map(r=>({
+      v:r[0], u:r[1], g:Number(r[2])
+    }))
     .sort((a,b)=>a.g-b.g);
 
-  // popup
   if(rows.length>lastCount){
-    let last=rows[rows.length-1];
+    const last=rows[rows.length-1];
     showPopup(`${last.v} ${last.u} (${last.g})`);
   }
-  lastCount=rows.length;
 
+  lastCount=rows.length;
   draw(rows);
 }
 
 // DRAW
 function draw(rows){
   let html="";
+
   rows.forEach(r=>{
-    html+=`<tr>
-      <td>${r.v}</td>
-      <td>${r.u}</td>
-      <td>${r.g}</td>
-    </tr>`;
+    html += `
+      <tr>
+        <td>${r.v}</td>
+        <td>${r.u}</td>
+        <td>${r.g}</td>
+      </tr>`;
   });
 
-  // dubultojam lai var loop scroll
+  // dubults saraksts perfektam loop
   scrollBody.innerHTML = html + html;
 
-  // ātrums atkarīgs no rindu skaita
-  let duration = rows.length * 2 + "s";
-  scrollBody.style.animationDuration = duration;
-  scrollBody.className = "scroll";
+  // automātisks ātrums
+  const duration = Math.max(15, rows.length * 2);
+  scrollContent.style.animationDuration = duration + "s";
 }
 
 // POPUP
@@ -219,7 +243,7 @@ function showPopup(t){
   setTimeout(()=>popup.classList.remove("show"),2000);
 }
 
-// timeline
+// TIMELINE
 const timeline=[
  "1919 – Dibināta skola",
  "1924 – Pirmie absolventi",
@@ -227,13 +251,14 @@ const timeline=[
  "2024 – Atjaunota skola",
  "2026 – Salidojums"
 ];
+
 let i=0;
 setInterval(()=>{
   timelineText.textContent=timeline[i];
   i=(i+1)%timeline.length;
 },5000);
 
-// start
+// START
 load();
 setInterval(load,5000);
 
@@ -241,4 +266,3 @@ setInterval(load,5000);
 
 </body>
 </html>
-``
