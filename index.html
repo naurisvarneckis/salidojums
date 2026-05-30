@@ -20,17 +20,17 @@ body {
   position: fixed;
   top: 15px;
   right: 20px;
-  background: rgba(0,0,0,0.6);
+  background: rgba(0,0,0,0.65);
   padding: 10px 16px;
   border-radius: 10px;
 }
 #clockTime { font-size: 28px; color:#ffd700; }
 #clockDate { font-size: 14px; }
 
-/* ✅ POPUP AUGSTĀK */
+/* ===== POPUP ===== */
 #popup {
   position: fixed;
-  top: 50px;   /* 👈 BIJA 90px */
+  top: 50px;
   left: 50%;
   transform: translateX(-50%) translateY(-20px);
   background: rgba(0,0,0,0.9);
@@ -40,7 +40,7 @@ body {
   font-size: 22px;
   font-weight: bold;
   opacity: 0;
-  transition: all 0.5s ease;
+  transition: all 0.4s ease;
 }
 #popup.show {
   opacity: 1;
@@ -50,34 +50,41 @@ body {
 /* ===== LAYOUT ===== */
 .main {
   padding-top: 110px;
+  padding-bottom: 140px; /* ✅ vieta priekš timeline */
   text-align: center;
 }
 
 h1 {
-  font-size: 40px;
+  font-size: 42px;
   margin-bottom: 30px;
 }
 
 /* ===== TABULA ===== */
 table {
   margin: auto;
-  width: 650px;
+  width: 700px;
   font-size: 28px;
-  background: rgba(0,0,0,0.5);
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(6px);
   border-collapse: collapse;
-  border-radius: 10px;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.6);
 }
 
 th, td {
   padding: 14px;
   border-bottom: 1px solid rgba(255,255,255,0.2);
 }
-th { color:#ffd700; }
+
+th {
+  color: #ffd700;
+}
 
 /* ===== FOOTER ===== */
 .footer {
-  margin-top: 10px;
+  margin-top: 12px;
   color: #ccc;
+  font-size: 18px;
 }
 
 /* ===== TIMELINE ===== */
@@ -85,10 +92,11 @@ th { color:#ffd700; }
   position: fixed;
   bottom: 0;
   width: 100%;
-  background: rgba(0,0,0,0.8);
-  padding: 12px;
+  background: rgba(0,0,0,0.85);
+  padding: 14px;
   text-align: center;
   color: #ffd700;
+  font-size: 20px;
 }
 </style>
 </head>
@@ -103,6 +111,7 @@ th { color:#ffd700; }
 <div id="popup"></div>
 
 <div class="main">
+
   <h1>Ieradušies absolventi</h1>
 
   <table>
@@ -117,6 +126,7 @@ th { color:#ffd700; }
   </table>
 
   <div class="footer" id="pageInfo"></div>
+
 </div>
 
 <div id="timeline">
@@ -126,9 +136,11 @@ th { color:#ffd700; }
 <script>
 // ===== PULKSTENIS =====
 function updateClock(){
-  const now=new Date();
-  clockTime.textContent = now.toLocaleTimeString("lv-LV",{hour:"2-digit",minute:"2-digit"});
-  clockDate.textContent = now.toLocaleDateString("lv-LV",{day:"numeric",month:"long"});
+  const now = new Date();
+  clockTime.textContent =
+    now.toLocaleTimeString("lv-LV",{hour:"2-digit",minute:"2-digit"});
+  clockDate.textContent =
+    now.toLocaleDateString("lv-LV",{day:"numeric",month:"long"});
 }
 setInterval(updateClock,1000);
 updateClock();
@@ -139,7 +151,7 @@ const CSV_URL="https://docs.google.com/spreadsheets/d/e/2PACX-1vR4zOLpFlQgPZ4Lf9
 const ROWS_PER_PAGE=5;
 let rows=[],page=0;
 let lastCount=0;
-let nextDelay = 9000;
+let nextDelay=9000;
 
 // ===== LOAD DATA
 async function loadData(){
@@ -155,7 +167,7 @@ async function loadData(){
       uzvards:r[1],
       gads:Number(r[2])
     }))
-    .sort((a,b)=>a.gads-b.gads);  // ✅ KĀRTO VISU SARAKSTU
+    .sort((a,b)=>a.gads-b.gads); // ✅ globāli sakārtots
 
   if (newRows.length > lastCount) {
     const last = newRows[newRows.length - 1];
@@ -185,10 +197,10 @@ function render(){
   const total=Math.max(1,Math.ceil(rows.length/ROWS_PER_PAGE));
   pageInfo.textContent=`Lapa ${page+1} no ${total} • Kopā: ${rows.length}`;
 
-  // ✅ PĀRLAPOŠANA AR PAUZI
+  // ✅ gudra lapu maiņa
   if (page === total - 1) {
     page = 0;
-    nextDelay = 17000;
+    nextDelay = 16000; // ilgāka pēdējā lapa
   } else {
     page++;
     nextDelay = 9000;
@@ -219,10 +231,11 @@ loadData();
 setInterval(loadData,3000);
 loopRender();
 
-// ===== TIMELINE
+// ===== TIMELINE =====
 const timeline=[
  "1919 – Dibināta Talsu pamatskola",
  "1924 – Pirmie absolventi",
+ "1960–1980 – Skolas attīstība",
  "2022 – Skolas pārbūve",
  "2024 – Atjaunota skola",
  "2026 – Salidojums"
