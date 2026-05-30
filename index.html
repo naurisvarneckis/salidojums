@@ -27,10 +27,10 @@ body {
 #clockTime { font-size: 28px; color:#ffd700; }
 #clockDate { font-size: 14px; }
 
-/* ===== POPUP ===== */
+/* ✅ POPUP AUGSTĀK */
 #popup {
   position: fixed;
-  top: 90px;
+  top: 50px;   /* 👈 BIJA 90px */
   left: 50%;
   transform: translateX(-50%) translateY(-20px);
   background: rgba(0,0,0,0.9);
@@ -72,7 +72,6 @@ th, td {
   padding: 14px;
   border-bottom: 1px solid rgba(255,255,255,0.2);
 }
-
 th { color:#ffd700; }
 
 /* ===== FOOTER ===== */
@@ -140,7 +139,7 @@ const CSV_URL="https://docs.google.com/spreadsheets/d/e/2PACX-1vR4zOLpFlQgPZ4Lf9
 const ROWS_PER_PAGE=5;
 let rows=[],page=0;
 let lastCount=0;
-let nextDelay = 6000;
+let nextDelay = 9000;
 
 // ===== LOAD DATA
 async function loadData(){
@@ -154,10 +153,10 @@ async function loadData(){
     .map(r=>({
       vards:r[0],
       uzvards:r[1],
-      gads:r[2]
-    }));
+      gads:Number(r[2])
+    }))
+    .sort((a,b)=>a.gads-b.gads);  // ✅ KĀRTO VISU SARAKSTU
 
-  // ✅ popup ar vārdu + gadu
   if (newRows.length > lastCount) {
     const last = newRows[newRows.length - 1];
     showPopup(`${last.vards} ${last.uzvards} (${last.gads})`);
@@ -186,13 +185,13 @@ function render(){
   const total=Math.max(1,Math.ceil(rows.length/ROWS_PER_PAGE));
   pageInfo.textContent=`Lapa ${page+1} no ${total} • Kopā: ${rows.length}`;
 
-  // ✅ PĒDĒJĀ LAPA ILGĀK
+  // ✅ PĀRLAPOŠANA AR PAUZI
   if (page === total - 1) {
     page = 0;
-    nextDelay = 12000;  // pēdējā lapa ilgāk
+    nextDelay = 17000;
   } else {
     page++;
-    nextDelay = 6000;
+    nextDelay = 9000;
   }
 }
 
