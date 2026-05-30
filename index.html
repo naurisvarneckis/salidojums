@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Ieradušies absolventi</title>
 
 <style>
@@ -11,7 +10,7 @@ body {
   margin: 0;
   font-family: Arial;
   color: white;
-  overflow-x: hidden;
+  overflow: hidden;
 
   background-image:
     linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.75)),
@@ -21,7 +20,7 @@ body {
   background-position: center;
 }
 
-/* ===== PULKSTENIS ===== */
+/* CLOCK */
 #clockBox {
   position: fixed;
   top: 2vh;
@@ -30,15 +29,10 @@ body {
   padding: 1vh 1.5vw;
   border-radius: 10px;
 }
-#clockTime {
-  color: gold;
-  font-size: clamp(30px, 3vw, 50px);
-}
-#clockDate {
-  font-size: clamp(14px, 1vw, 20px);
-}
+#clockTime { color: gold; font-size: clamp(30px,3vw,50px); }
+#clockDate { font-size: clamp(14px,1vw,20px); }
 
-/* ===== POPUP ===== */
+/* POPUP */
 #popup {
   position: fixed;
   top: 4vh;
@@ -46,10 +40,10 @@ body {
   transform: translateX(-50%) translateY(-20px);
   background: rgba(0,0,0,0.9);
   border: 2px solid gold;
-  padding: 1.5vh 2vw;
+  padding: 1vh 2vw;
   border-radius: 10px;
-  font-size: clamp(18px, 1.8vw, 30px);
   font-weight: bold;
+  font-size: clamp(18px,1.8vw,30px);
   opacity: 0;
   transition: 0.4s;
 }
@@ -58,38 +52,34 @@ body {
   transform: translateX(-50%) translateY(0);
 }
 
-/* ===== LAYOUT ===== */
+/* LAYOUT */
 .main {
   padding-top: 10vh;
-  padding-bottom: 16vh;
+  padding-bottom: 15vh;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
 h1 {
-  font-size: clamp(36px, 4vw, 70px);
-  margin-bottom: 3vh;
-  text-shadow: 0 3px 15px rgba(0,0,0,0.7);
+  font-size: clamp(36px,4vw,70px);
+  margin-bottom: 2vh;
 }
 
-/* ===== TABULA ===== */
+/* TABLE */
 .table-wrapper {
-  width: 100%;
-  display: flex;
-  justify-content: center;
+  width: 70%;
+  max-width: 1200px;
+  overflow: hidden;
 }
 
 table {
-  width: 70%;
-  max-width: 1200px;
-  font-size: clamp(22px, 2vw, 38px);
+  width: 100%;
+  border-collapse: collapse;
+  font-size: clamp(22px,2vw,36px);
   background: rgba(0,0,0,0.55);
   backdrop-filter: blur(6px);
-  border-collapse: collapse;
   border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.6);
 }
 
 th, td {
@@ -98,22 +88,35 @@ th, td {
 }
 th { color: gold; }
 
-/* ===== FOOTER ===== */
-.footer {
-  margin-top: 12px;
-  font-size: clamp(14px, 1vw, 22px);
+tbody {
+  display: block;
 }
 
-/* ===== TIMELINE ===== */
+thead, tbody tr {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+}
+
+/* SCROLL */
+.scroll {
+  animation: scrollUp linear infinite;
+}
+
+@keyframes scrollUp {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-50%); }
+}
+
+/* FOOT */
 #timeline {
   position: fixed;
   bottom: 0;
   width: 100%;
+  padding: 1vh;
   background: rgba(0,0,0,0.85);
-  padding: 1.4vh;
   text-align: center;
   color: gold;
-  font-size: clamp(16px, 1.3vw, 26px);
 }
 </style>
 </head>
@@ -136,14 +139,12 @@ th { color: gold; }
         <tr>
           <th>Vārds</th>
           <th>Uzvārds</th>
-          <th>Izlaiduma gads</th>
+          <th>Gads</th>
         </tr>
       </thead>
-      <tbody id="tableBody"></tbody>
+      <tbody id="scrollBody"></tbody>
     </table>
   </div>
-
-  <div class="footer" id="pageInfo"></div>
 </div>
 
 <div id="timeline">
@@ -151,104 +152,74 @@ th { color: gold; }
 </div>
 
 <script>
-// ===== PULKSTENIS =====
+// CLOCK
 function updateClock(){
-  const now=new Date();
-
+  const n=new Date();
   clockTime.textContent =
-    now.toLocaleTimeString("lv-LV", {hour:"2-digit", minute:"2-digit"});
-
+    n.toLocaleTimeString("lv-LV",{hour:"2-digit",minute:"2-digit"});
   clockDate.textContent =
-    now.toLocaleDateString("lv-LV",{day:"numeric",month:"long"});
+    n.toLocaleDateString("lv-LV",{day:"numeric",month:"long"});
 }
-setInterval(updateClock,1000);
-updateClock();
+setInterval(updateClock,1000); updateClock();
 
-// ===== CSV =====
+// DATA
 const CSV_URL="https://docs.google.com/spreadsheets/d/e/2PACX-1vR4zOLpFlQgPZ4Lf9cKgWbMCxe8ZZtg2oc9QtE--1FpYK-YiaqBjaQY174sXey8b91m02OlRu-bD1Ax/pub?output=csv";
 
-const ROWS_PER_PAGE=5;
-
-let rows=[];
-let page=0;
 let lastCount=0;
 
-// ===== LOAD DATA
-async function loadData(){
-  const text=await (await fetch(CSV_URL)).text();
-  const d=text.includes(";")?";":",";
+async function load(){
+  const txt=await (await fetch(CSV_URL)).text();
+  const lines=txt.trim().split("\n");
+  const d = txt.includes(";")?";":",";
 
-  const lines=text.trim().split("\n");
-
-  const newRows = lines.slice(1)
+  let rows = lines.slice(1)
     .map(r=>r.split(d))
     .filter(r=>r.length>=3)
-    .map(r=>({
-      vards:r[0],
-      uzvards:r[1],
-      gads:Number(r[2])
-    }))
-    .sort((a,b)=>a.gads-b.gads);
+    .map(r=>{
+      return {
+        v:r[0], u:r[1], g:Number(r[2])
+      };
+    })
+    .sort((a,b)=>a.g-b.g);
 
-  if(newRows.length > lastCount){
-    const last=newRows[newRows.length-1];
-    showPopup(`${last.vards} ${last.uzvards} (${last.gads})`);
+  // popup
+  if(rows.length>lastCount){
+    let last=rows[rows.length-1];
+    showPopup(`${last.v} ${last.u} (${last.g})`);
   }
+  lastCount=rows.length;
 
-  lastCount=newRows.length;
-
-  rows=newRows;
+  draw(rows);
 }
 
-// ===== RENDER (STABILĀ)
-function render(){
+// DRAW
+function draw(rows){
+  let html="";
+  rows.forEach(r=>{
+    html+=`<tr>
+      <td>${r.v}</td>
+      <td>${r.u}</td>
+      <td>${r.g}</td>
+    </tr>`;
+  });
 
-  const total=Math.max(1,Math.ceil(rows.length/ROWS_PER_PAGE));
+  // dubultojam lai var loop scroll
+  scrollBody.innerHTML = html + html;
 
-  if(page >= total){
-    page=0;
-  }
-
-  tableBody.innerHTML="";
-
-  rows.slice(page*ROWS_PER_PAGE,(page+1)*ROWS_PER_PAGE)
-    .forEach(r=>{
-      tableBody.innerHTML+=`
-        <tr>
-          <td>${r.vards}</td>
-          <td>${r.uzvards}</td>
-          <td>${r.gads}</td>
-        </tr>`;
-    });
-
-  pageInfo.textContent=`Lapa ${page+1} no ${total} • Kopā: ${rows.length}`;
-
-  page++;
+  // ātrums atkarīgs no rindu skaita
+  let duration = rows.length * 2 + "s";
+  scrollBody.style.animationDuration = duration;
+  scrollBody.className = "scroll";
 }
 
-// ===== LOOP (9 sekundes)
-function loopRender(){
-  render();
-  setTimeout(loopRender,9000);
-}
-
-// ===== POPUP
-function showPopup(name){
-  popup.textContent="Jauns ieraksts – "+name;
-
+// POPUP
+function showPopup(t){
+  popup.textContent="Jauns ieraksts – "+t;
   popup.classList.add("show");
-
-  setTimeout(()=>{
-    popup.classList.remove("show");
-  },2000);
+  setTimeout(()=>popup.classList.remove("show"),2000);
 }
 
-// START
-loadData();
-setInterval(loadData,3000);
-loopRender();
-
-// ===== TIMELINE
+// timeline
 const timeline=[
  "1919 – Dibināta skola",
  "1924 – Pirmie absolventi",
@@ -256,14 +227,18 @@ const timeline=[
  "2024 – Atjaunota skola",
  "2026 – Salidojums"
 ];
-
 let i=0;
 setInterval(()=>{
   timelineText.textContent=timeline[i];
   i=(i+1)%timeline.length;
 },5000);
 
+// start
+load();
+setInterval(load,5000);
+
 </script>
 
 </body>
 </html>
+``
