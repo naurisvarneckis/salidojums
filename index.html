@@ -71,58 +71,70 @@ h1 {
 .table-wrapper {
   width: 70%;
   max-width: 1200px;
-  height: 55vh;
+}
+
+/* HEADER (fiksēts) */
+table.header {
+  width: 100%;
+  border-collapse: collapse;
+  background: rgba(0,0,0,0.8);
+}
+
+table.header th {
+  padding: 12px;
+  color: gold;
+  font-size: clamp(22px,2vw,36px);
+}
+
+/* SCROLL AREA */
+.scroll-area {
+  height: 45vh;
   overflow: hidden;
   position: relative;
 }
 
-/* Scroll container */
 .scroll-content {
   position: absolute;
   width: 100%;
-  will-change: transform;
   animation: scrollUp linear infinite;
 }
 
-/* TABLE */
-table {
+/* DATA TABLE */
+table.data {
   width: 100%;
   border-collapse: collapse;
-  font-size: clamp(22px,2vw,36px);
+  font-size: clamp(22px,2vw,34px);
   background: rgba(0,0,0,0.55);
-  backdrop-filter: blur(6px);
-  border-radius: 12px;
 }
 
-th, td {
+table.data td {
   padding: 12px;
   border-bottom: 1px solid rgba(255,255,255,0.2);
 }
-th { color: gold; }
 
-/* SCROLL ANIMATION */
+/* SCROLL */
 @keyframes scrollUp {
   0% { transform: translateY(0); }
   100% { transform: translateY(-50%); }
 }
 
-/* FADE TOP/BOTTOM (TV EFFECT) */
-.table-wrapper::before,
-.table-wrapper::after {
+/* FADE */
+.scroll-area::before,
+.scroll-area::after {
   content:"";
   position:absolute;
   left:0;
   width:100%;
-  height:70px;
+  height:60px;
   z-index:5;
 }
 
-.table-wrapper::before {
+.scroll-area::before {
   top:0;
   background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent);
 }
 
-.table-wrapper::after {
+.scroll-area::after {
   bottom:0;
   background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
 }
@@ -150,25 +162,31 @@ th { color: gold; }
 <div id="popup"></div>
 
 <div class="main">
-
   <h1>Ieradušies absolventi</h1>
 
   <div class="table-wrapper">
-    <div class="scroll-content" id="scrollContent">
-      <table>
-        <thead>
-          <tr>
-            <th>Vārds</th>
-            <th>Uzvārds</th>
-            <th>Gads</th>
-          </tr>
-        </thead>
 
-        <tbody id="scrollBody"></tbody>
-      </table>
+    <!-- ✅ HEADER -->
+    <table class="header">
+      <thead>
+        <tr>
+          <th>Vārds</th>
+          <th>Uzvārds</th>
+          <th>Gads</th>
+        </tr>
+      </thead>
+    </table>
+
+    <!-- ✅ SCROLL -->
+    <div class="scroll-area">
+      <div class="scroll-content" id="scrollContent">
+        <table class="data">
+          <tbody id="scrollBody"></tbody>
+        </table>
+      </div>
     </div>
-  </div>
 
+  </div>
 </div>
 
 <div id="timeline">
@@ -184,15 +202,14 @@ function updateClock(){
   clockDate.textContent =
     n.toLocaleDateString("lv-LV",{day:"numeric",month:"long"});
 }
-setInterval(updateClock,1000);
-updateClock();
+setInterval(updateClock,1000); updateClock();
 
 // CSV
 const CSV_URL="https://docs.google.com/spreadsheets/d/e/2PACX-1vR4zOLpFlQgPZ4Lf9cKgWbMCxe8ZZtg2oc9QtE--1FpYK-YiaqBjaQY174sXey8b91m02OlRu-bD1Ax/pub?output=csv";
 
 let lastCount=0;
 
-// LOAD DATA
+// LOAD
 async function load(){
   const txt=await (await fetch(CSV_URL)).text();
   const d=txt.includes(";")?";":",";
@@ -201,9 +218,7 @@ async function load(){
     .slice(1)
     .map(r=>r.split(d))
     .filter(r=>r.length>=3)
-    .map(r=>({
-      v:r[0], u:r[1], g:Number(r[2])
-    }))
+    .map(r=>({ v:r[0], u:r[1], g:Number(r[2]) }))
     .sort((a,b)=>a.g-b.g);
 
   if(rows.length>lastCount){
@@ -220,7 +235,7 @@ function draw(rows){
   let html="";
 
   rows.forEach(r=>{
-    html += `
+    html+=`
       <tr>
         <td>${r.v}</td>
         <td>${r.u}</td>
@@ -228,12 +243,10 @@ function draw(rows){
       </tr>`;
   });
 
-  // dubults saraksts perfektam loop
   scrollBody.innerHTML = html + html;
 
-  // automātisks ātrums
-  const duration = Math.max(15, rows.length * 2);
-  scrollContent.style.animationDuration = duration + "s";
+  const speed=Math.max(20, rows.length*2);
+  scrollContent.style.animationDuration = speed + "s";
 }
 
 // POPUP
