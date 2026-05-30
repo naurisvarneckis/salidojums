@@ -58,7 +58,7 @@ table {
   backdrop-filter: blur(6px);
   border-radius: 12px;
   overflow: hidden;
-  transition: opacity 0.8s ease;
+  transition: opacity 0.6s ease;
 }
 
 .fade {
@@ -79,9 +79,9 @@ th {
   font-size: 24px;
 }
 
-/* ===== IZCELT JAUNĀKO ===== */
+/* JAUNĀKAIS IERAKSTS */
 .highlight {
-  background: rgba(255, 215, 0, 0.15);
+  background: rgba(255, 215, 0, 0.18);
   font-weight: bold;
 }
 
@@ -140,10 +140,68 @@ th {
 /* ===== PULKSTENIS ===== */
 function updateClock() {
   const now = new Date();
-  clockTime.textContent = now.toLocaleTimeString("lv-LV",{hour:"2-digit",minute:"2-digit"});
+  clockTime.textContent =
+    now.toLocaleTimeString("lv-LV",{hour:"2-digit",minute:"2-digit"});
 }
-setInterval(updateClock,1000); updateClock();
+setInterval(updateClock,1000);
+updateClock();
 
-clockDate.textContent = new Date().toLocaleDateString("lv-LV",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+clockDate.textContent =
+  new Date().toLocaleDateString("lv-LV",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
 
-/* ===== CSV ===== */
+/* ===== CSV FAST UPDATE ===== */
+const CSV_URL="https://docs.google.com/spreadsheets/d/e/2PACX-1vR4zOLpFlQgPZ4Lf9cKgWbMCxe8ZZtg2oc9QtE--1FpYK-YiaqBjaQY174sXey8b91m02OlRu-bD1Ax/pub?output=csv";
+
+const ROWS_PER_PAGE=5;
+
+let rows=[],page=0;
+let previousData = "";
+
+// 🔥 SMART LOAD
+async function loadData(){
+  const res = await fetch(CSV_URL);
+  const text = await res.text();
+
+  // ✅ JA NAV IZMAIŅU → nedara neko
+  if (text === previousData) return;
+
+  previousData = text;
+
+  const d = text.includes(";") ? ";" : ",";
+  const lines = text.trim().split("\n");
+
+  rows = lines.slice(1)
+    .map(r=>r.split(d))
+    .filter(r=>r[0])
+    .map(r=>({
+      vards:r[0],
+      uzvards:r[1],
+      gads:Number(r[2])
+    }))
+    .sort((a,b)=>a.gads-b.gads);
+
+  page = 0;
+
+  render(true); // 🔥 uzreiz pārzīmē
+}
+
+// 🔥 RENDER
+function render(){
+  const table = document.getElementById("table");
+
+  table.classList.add("fade");
+
+  setTimeout(()=>{
+    tableBody.innerHTML="";
+
+    rows.slice(page*ROWS_PER_PAGE,(page+1)*ROWS_PER_PAGE)
+      .forEach((r,i)=>{
+        tableBody.innerHTML+=`
+          <tr class="${i===0 ? "highlight" : ""}">
+            <td>${r.vards}</td>
+            <td>${r.uzvards}</td>
+            <td>${r.gads}</td>
+          </tr>`;
+      });
+
+    const total=Math.max(1,Math.ceil(rows.length/ROWS_PER_PAGE));
