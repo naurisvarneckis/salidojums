@@ -3,108 +3,134 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Ieradušies absolventi</title>
 
 <style>
 body {
   margin: 0;
   font-family: Arial;
-  color: #fff;
+  color: white;
+  overflow-x: hidden;
+
   background-image:
     linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.75)),
     url("https://talsupsk.lv/wp-content/uploads/2026/01/talsu-pamatskola-1170x878.jpg");
+
   background-size: cover;
   background-position: center;
 }
 
-/* ===== PULKSTENIS ===== */
+/* PULKSTENIS */
 #clockBox {
   position: fixed;
   top: 2vh;
   right: 2vw;
-  background: rgba(0,0,0,0.65);
+  background: rgba(0,0,0,0.7);
   padding: 1vh 1.5vw;
   border-radius: 10px;
 }
+
 #clockTime {
-  color:#ffd700;
-  font-size: clamp(28px, 2.8vw, 50px);
-}
-#clockDate {
-  font-size: clamp(14px, 1vw, 22px);
+  color: gold;
+  font-size: clamp(30px, 3vw, 50px);
 }
 
-/* ===== POPUP ===== */
+#clockDate {
+  font-size: clamp(14px, 1vw, 20px);
+}
+
+/* POPUP */
 #popup {
   position: fixed;
   top: 4vh;
   left: 50%;
   transform: translateX(-50%) translateY(-20px);
+
   background: rgba(0,0,0,0.9);
-  border: 2px solid #ffd700;
+  border: 2px solid gold;
   padding: 1.5vh 2vw;
   border-radius: 10px;
+
+  font-size: clamp(18px, 1.8vw, 30px);
   font-weight: bold;
-  font-size: clamp(18px, 1.8vw, 32px);
+
   opacity: 0;
-  transition: all 0.4s ease;
+  transition: 0.4s;
 }
+
 #popup.show {
   opacity: 1;
   transform: translateX(-50%) translateY(0);
 }
 
-/* ===== LAYOUT ===== */
+/* LAYOUT */
 .main {
   padding-top: 10vh;
   padding-bottom: 16vh;
-  text-align: center;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* ✅ perfekts centrs */
 }
 
 h1 {
-  font-size: clamp(34px, 4vw, 70px);
+  font-size: clamp(36px, 4vw, 70px);
   margin-bottom: 3vh;
   text-shadow: 0 3px 15px rgba(0,0,0,0.7);
 }
 
-/* ===== TABULA ===== */
+/* TABULA wrap */
+.table-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+/* TABULA */
 table {
-  margin: auto;
   width: 70%;
   max-width: 1200px;
-  font-size: clamp(22px, 2.2vw, 40px);
+
+  font-size: clamp(22px, 2vw, 38px);
+
   background: rgba(0,0,0,0.55);
   backdrop-filter: blur(6px);
+
   border-collapse: collapse;
   border-radius: 12px;
+  overflow: hidden;
+
   box-shadow: 0 10px 30px rgba(0,0,0,0.6);
 }
 
 th, td {
-  padding: 1.2vh;
+  padding: 12px;
   border-bottom: 1px solid rgba(255,255,255,0.2);
 }
+
 th {
-  color:#ffd700;
+  color: gold;
 }
 
-/* ===== FOOTER ===== */
+/* FOOTER */
 .footer {
-  margin-top: 1.5vh;
-  font-size: clamp(14px, 1.2vw, 22px);
-  color: #ccc;
+  margin-top: 12px;
+  font-size: clamp(14px, 1vw, 22px);
 }
 
-/* ===== TIMELINE ===== */
+/* TIMELINE */
 #timeline {
   position: fixed;
   bottom: 0;
   width: 100%;
+
   background: rgba(0,0,0,0.85);
-  padding: 1.5vh;
+  padding: 1.4vh;
+
   text-align: center;
-  color: #ffd700;
-  font-size: clamp(16px, 1.4vw, 28px);
+  color: gold;
+  font-size: clamp(16px, 1.3vw, 26px);
 }
 </style>
 </head>
@@ -119,20 +145,25 @@ th {
 <div id="popup"></div>
 
 <div class="main">
+
   <h1>Ieradušies absolventi</h1>
 
-  <table>
-    <thead>
-      <tr>
-        <th>Vārds</th>
-        <th>Uzvārds</th>
-        <th>Izlaiduma gads</th>
-      </tr>
-    </thead>
-    <tbody id="tableBody"></tbody>
-  </table>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Vārds</th>
+          <th>Uzvārds</th>
+          <th>Izlaiduma gads</th>
+        </tr>
+      </thead>
+
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
 
   <div class="footer" id="pageInfo"></div>
+
 </div>
 
 <div id="timeline">
@@ -140,42 +171,49 @@ th {
 </div>
 
 <script>
-// ===== PULKSTENIS =====
+// PULKSTENIS
 function updateClock(){
-  const now=new Date();
+  const now = new Date();
+
   clockTime.textContent =
-    now.toLocaleTimeString("lv-LV",{hour:"2-digit",minute:"2-digit"});
+    now.toLocaleTimeString("lv-LV", {hour:"2-digit", minute:"2-digit"});
+
   clockDate.textContent =
-    now.toLocaleDateString("lv-LV",{day:"numeric",month:"long"});
+    now.toLocaleDateString("lv-LV", {day:"numeric", month:"long"});
 }
+
 setInterval(updateClock,1000);
 updateClock();
 
-// ===== CSV =====
-const CSV_URL="https://docs.google.com/spreadsheets/d/e/2PACX-1vR4zOLpFlQgPZ4Lf9cKgWbMCxe8ZZtg2oc9QtE--1FpYK-YiaqBjaQY174sXey8b91m02OlRu-bD1Ax/pub?output=csv";
+// CSV
+const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR4zOLpFlQgPZ4Lf9cKgWbMCxe8ZZtg2oc9QtE--1FpYK-YiaqBjaQY174sXey8b91m02OlRu-bD1Ax/pub?output=csv";
 
-const ROWS_PER_PAGE=5;
-let rows=[],page=0;
-let lastCount=0;
-let nextDelay=9000;
+const ROWS_PER_PAGE = 5;
 
-// ===== LOAD DATA
+let rows = [];
+let page = 0;
+let lastCount = 0;
+let nextDelay = 9000;
+
+// LOAD DATA
 async function loadData(){
-  const text=await (await fetch(CSV_URL)).text();
-  const d=text.includes(";")?";":",";
-  const lines=text.trim().split("\n");
+  const text = await (await fetch(CSV_URL)).text();
+  const d = text.includes(";") ? ";" : ",";
+
+  const lines = text.trim().split("\n");
 
   const newRows = lines.slice(1)
-    .map(r=>r.split(d))
-    .filter(r=>r.length>=3)
-    .map(r=>({
-      vards:r[0],
-      uzvards:r[1],
-      gads:Number(r[2])
+    .map(r => r.split(d))
+    .filter(r => r.length >= 3)
+    .map(r => ({
+      vards: r[0],
+      uzvards: r[1],
+      gads: Number(r[2])
     }))
     .sort((a,b)=>a.gads-b.gads);
 
-  if (newRows.length > lastCount) {
+  // JAUNS IERAKSTS
+  if(newRows.length > lastCount){
     const last = newRows[newRows.length - 1];
     showPopup(`${last.vards} ${last.uzvards} (${last.gads})`);
   }
@@ -186,13 +224,13 @@ async function loadData(){
   render();
 }
 
-// ===== RENDER
+// RENDER
 function render(){
-  tableBody.innerHTML="";
+  tableBody.innerHTML = "";
 
   rows.slice(page*ROWS_PER_PAGE,(page+1)*ROWS_PER_PAGE)
     .forEach(r=>{
-      tableBody.innerHTML+=`
+      tableBody.innerHTML += `
         <tr>
           <td>${r.vards}</td>
           <td>${r.uzvards}</td>
@@ -200,10 +238,12 @@ function render(){
         </tr>`;
     });
 
-  const total=Math.max(1,Math.ceil(rows.length/ROWS_PER_PAGE));
-  pageInfo.textContent=`Lapa ${page+1} no ${total} • Kopā: ${rows.length}`;
+  const total = Math.max(1,Math.ceil(rows.length/ROWS_PER_PAGE));
 
-  if (page === total - 1) {
+  pageInfo.textContent =
+    `Lapa ${page+1} no ${total} • Kopā: ${rows.length}`;
+
+  if(page === total-1){
     page = 0;
     nextDelay = 16000;
   } else {
@@ -212,15 +252,16 @@ function render(){
   }
 }
 
-// ===== LOOP
+// LOOP
 function loopRender(){
   render();
   setTimeout(loopRender, nextDelay);
 }
 
-// ===== POPUP
+// POPUP
 function showPopup(name){
-  popup.textContent="Jauns ieraksts – " + name;
+  popup.textContent = "Jauns ieraksts – " + name;
+
   popup.classList.add("show");
 
   setTimeout(()=>{
@@ -233,23 +274,23 @@ loadData();
 setInterval(loadData,3000);
 loopRender();
 
-// ===== TIMELINE
-const timeline=[
- "1919 – Dibināta Talsu pamatskola",
+// TIMELINE
+const timeline = [
+ "1919 – Dibināta skola",
  "1924 – Pirmie absolventi",
- "1960–1980 – Skolas attīstība",
- "2022 – Skolas pārbūve",
+ "2022 – Pārbūve",
  "2024 – Atjaunota skola",
  "2026 – Salidojums"
 ];
 
-let i=0;
+let i = 0;
+
 setInterval(()=>{
-  timelineText.textContent=timeline[i];
-  i=(i+1)%timeline.length;
+  timelineText.textContent = timeline[i];
+  i = (i+1)%timeline.length;
 },5000);
+
 </script>
 
 </body>
 </html>
-``
