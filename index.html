@@ -73,9 +73,7 @@ th, td {
   border-bottom: 1px solid rgba(255,255,255,0.2);
 }
 
-th {
-  color:#ffd700;
-}
+th { color:#ffd700; }
 
 /* ===== FOOTER ===== */
 .footer {
@@ -103,7 +101,6 @@ th {
   <div id="clockDate"></div>
 </div>
 
-<!-- ✅ Popup -->
 <div id="popup"></div>
 
 <div class="main">
@@ -143,7 +140,9 @@ const CSV_URL="https://docs.google.com/spreadsheets/d/e/2PACX-1vR4zOLpFlQgPZ4Lf9
 const ROWS_PER_PAGE=5;
 let rows=[],page=0;
 let lastCount=0;
+let nextDelay = 6000;
 
+// ===== LOAD DATA
 async function loadData(){
   const text=await (await fetch(CSV_URL)).text();
   const d=text.includes(";")?";":",";
@@ -158,7 +157,7 @@ async function loadData(){
       gads:r[2]
     }));
 
-  // ✅ JAUNS IERAKSTS → POPUP
+  // ✅ popup ar vārdu + gadu
   if (newRows.length > lastCount) {
     const last = newRows[newRows.length - 1];
     showPopup(`${last.vards} ${last.uzvards} (${last.gads})`);
@@ -170,6 +169,7 @@ async function loadData(){
   render();
 }
 
+// ===== RENDER
 function render(){
   tableBody.innerHTML="";
 
@@ -186,10 +186,23 @@ function render(){
   const total=Math.max(1,Math.ceil(rows.length/ROWS_PER_PAGE));
   pageInfo.textContent=`Lapa ${page+1} no ${total} • Kopā: ${rows.length}`;
 
-  page=(page+1)%total;
+  // ✅ PĒDĒJĀ LAPA ILGĀK
+  if (page === total - 1) {
+    page = 0;
+    nextDelay = 12000;  // pēdējā lapa ilgāk
+  } else {
+    page++;
+    nextDelay = 6000;
+  }
 }
 
-// ===== POPUP =====
+// ===== LOOP
+function loopRender(){
+  render();
+  setTimeout(loopRender, nextDelay);
+}
+
+// ===== POPUP
 function showPopup(name){
   const popup=document.getElementById("popup");
 
@@ -205,9 +218,9 @@ function showPopup(name){
 // START
 loadData();
 setInterval(loadData,3000);
-setInterval(render,6000);
+loopRender();
 
-// ===== TIMELINE =====
+// ===== TIMELINE
 const timeline=[
  "1919 – Dibināta Talsu pamatskola",
  "1924 – Pirmie absolventi",
