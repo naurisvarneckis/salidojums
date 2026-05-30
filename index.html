@@ -2,6 +2,7 @@
 <html lang="lv">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ieradušies absolventi</title>
 
 <style>
@@ -13,31 +14,32 @@ body {
     linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.75)),
     url("https://talsupsk.lv/wp-content/uploads/2026/01/talsu-pamatskola-1170x878.jpg");
   background-size: cover;
+  background-position: center;
 }
 
 /* ===== PULKSTENIS ===== */
 #clockBox {
   position: fixed;
-  top: 15px;
-  right: 20px;
+  top: 1.5vh;
+  right: 2vw;
   background: rgba(0,0,0,0.65);
-  padding: 10px 16px;
+  padding: 1vh 1.5vw;
   border-radius: 10px;
 }
-#clockTime { font-size: 28px; color:#ffd700; }
-#clockDate { font-size: 14px; }
+#clockTime { font-size: 3vw; color:#ffd700; }
+#clockDate { font-size: 1.2vw; }
 
 /* ===== POPUP ===== */
 #popup {
   position: fixed;
-  top: 30px; /* ✅ augstāk */
+  top: 4vh;
   left: 50%;
   transform: translateX(-50%) translateY(-20px);
   background: rgba(0,0,0,0.9);
   border: 2px solid #ffd700;
-  padding: 16px 28px;
+  padding: 1.5vh 2vw;
   border-radius: 10px;
-  font-size: 22px;
+  font-size: 2vw;
   font-weight: bold;
   opacity: 0;
   transition: all 0.4s ease;
@@ -49,38 +51,42 @@ body {
 
 /* ===== LAYOUT ===== */
 .main {
-  padding-top: 90px;     /* ✅ labāks balanss */
-  padding-bottom: 140px; /* ✅ vieta timeline */
+  padding-top: 10vh;
+  padding-bottom: 15vh;
   text-align: center;
 }
 
 h1 {
-  font-size: 42px;
-  margin-bottom: 30px;
+  font-size: 4vw;
+  margin-bottom: 3vh;
 }
 
 /* ===== TABULA ===== */
 table {
   margin: auto;
-  width: 700px;
-  font-size: 28px;
+  width: 70%;
+  max-width: 1200px;
+  font-size: 2.2vw;
   background: rgba(0,0,0,0.55);
   backdrop-filter: blur(6px);
   border-collapse: collapse;
   border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.6);
 }
 
 th, td {
-  padding: 14px;
+  padding: 1.2vh;
   border-bottom: 1px solid rgba(255,255,255,0.2);
 }
-th { color:#ffd700; }
 
+th {
+  color:#ffd700;
+}
+
+/* ===== FOOTER ===== */
 .footer {
-  margin-top: 12px;
+  margin-top: 1.5vh;
+  font-size: 1.3vw;
   color: #ccc;
-  font-size: 18px;
 }
 
 /* ===== TIMELINE ===== */
@@ -89,10 +95,10 @@ th { color:#ffd700; }
   bottom: 0;
   width: 100%;
   background: rgba(0,0,0,0.85);
-  padding: 14px;
+  padding: 1.5vh;
   text-align: center;
   color: #ffd700;
-  font-size: 20px;
+  font-size: 1.6vw;
 }
 </style>
 </head>
@@ -149,7 +155,6 @@ let rows=[],page=0;
 let lastCount=0;
 let nextDelay=9000;
 
-// ===== LOAD DATA
 async function loadData(){
   const text=await (await fetch(CSV_URL)).text();
   const d=text.includes(";")?";":",";
@@ -163,7 +168,7 @@ async function loadData(){
       uzvards:r[1],
       gads:Number(r[2])
     }))
-    .sort((a,b)=>a.gads-b.gads); // ✅ vecākie → jaunākie
+    .sort((a,b)=>a.gads-b.gads);
 
   if (newRows.length > lastCount) {
     const last = newRows[newRows.length - 1];
@@ -176,7 +181,6 @@ async function loadData(){
   render();
 }
 
-// ===== RENDER
 function render(){
   tableBody.innerHTML="";
 
@@ -195,25 +199,20 @@ function render(){
 
   if (page === total - 1) {
     page = 0;
-    nextDelay = 16000; // ✅ ilgāka pēdējā lapa
+    nextDelay = 16000;
   } else {
     page++;
     nextDelay = 9000;
   }
 }
 
-// ===== LOOP
 function loopRender(){
   render();
   setTimeout(loopRender, nextDelay);
 }
 
-// ===== POPUP
 function showPopup(name){
-  const popup=document.getElementById("popup");
-
   popup.textContent="Jauns ieraksts – " + name;
-
   popup.classList.add("show");
 
   setTimeout(()=>{
@@ -221,17 +220,15 @@ function showPopup(name){
   },2000);
 }
 
-// START
 loadData();
 setInterval(loadData,3000);
 loopRender();
 
 // ===== TIMELINE =====
 const timeline=[
- "1919 – Dibināta Talsu pamatskola",
+ "1919 – Dibināta skola",
  "1924 – Pirmie absolventi",
- "1960–1980 – Skolas attīstība",
- "2022 – Skolas pārbūve",
+ "2022 – Pārbūve",
  "2024 – Atjaunota skola",
  "2026 – Salidojums"
 ];
