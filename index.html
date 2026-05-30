@@ -30,18 +30,18 @@ body {
 /* ===== POPUP ===== */
 #popup {
   position: fixed;
-  top: 80px;
+  top: 90px;
   left: 50%;
   transform: translateX(-50%) translateY(-20px);
-  background: rgba(0,0,0,0.85);
-  color: #ffd700;
+  background: rgba(0,0,0,0.9);
+  border: 2px solid #ffd700;
   padding: 16px 28px;
   border-radius: 10px;
   font-size: 22px;
+  font-weight: bold;
   opacity: 0;
   transition: all 0.5s ease;
 }
-
 #popup.show {
   opacity: 1;
   transform: translateX(-50%) translateY(0);
@@ -49,7 +49,7 @@ body {
 
 /* ===== LAYOUT ===== */
 .main {
-  padding-top: 100px;
+  padding-top: 110px;
   text-align: center;
 }
 
@@ -73,7 +73,9 @@ th, td {
   border-bottom: 1px solid rgba(255,255,255,0.2);
 }
 
-th { color:#ffd700; }
+th {
+  color:#ffd700;
+}
 
 /* ===== FOOTER ===== */
 .footer {
@@ -101,7 +103,8 @@ th { color:#ffd700; }
   <div id="clockDate"></div>
 </div>
 
-<div id="popup">JAUNS IERAKSTS!</div>
+<!-- ✅ Popup -->
+<div id="popup"></div>
 
 <div class="main">
   <h1>Ieradušies absolventi</h1>
@@ -125,15 +128,16 @@ th { color:#ffd700; }
 </div>
 
 <script>
-// PULKSTENIS
+// ===== PULKSTENIS =====
 function updateClock(){
   const now=new Date();
-  clockTime.textContent=now.toLocaleTimeString("lv-LV",{hour:"2-digit",minute:"2-digit"});
-  clockDate.textContent=now.toLocaleDateString("lv-LV",{day:"numeric",month:"long"});
+  clockTime.textContent = now.toLocaleTimeString("lv-LV",{hour:"2-digit",minute:"2-digit"});
+  clockDate.textContent = now.toLocaleDateString("lv-LV",{day:"numeric",month:"long"});
 }
-setInterval(updateClock,1000); updateClock();
+setInterval(updateClock,1000);
+updateClock();
 
-// CSV
+// ===== CSV =====
 const CSV_URL="https://docs.google.com/spreadsheets/d/e/2PACX-1vR4zOLpFlQgPZ4Lf9cKgWbMCxe8ZZtg2oc9QtE--1FpYK-YiaqBjaQY174sXey8b91m02OlRu-bD1Ax/pub?output=csv";
 
 const ROWS_PER_PAGE=5;
@@ -154,9 +158,10 @@ async function loadData(){
       gads:r[2]
     }));
 
-  // ✅ JAUNI IERAKSTI
+  // ✅ JAUNS IERAKSTS → POPUP
   if (newRows.length > lastCount) {
-    showPopup();
+    const last = newRows[newRows.length - 1];
+    showPopup(`${last.vards} ${last.uzvards} (${last.gads})`);
   }
 
   lastCount = newRows.length;
@@ -184,9 +189,11 @@ function render(){
   page=(page+1)%total;
 }
 
-// POPUP
-function showPopup(){
-  const popup = document.getElementById("popup");
+// ===== POPUP =====
+function showPopup(name){
+  const popup=document.getElementById("popup");
+
+  popup.textContent = "Jauns ieraksts – " + name;
 
   popup.classList.add("show");
 
@@ -200,7 +207,7 @@ loadData();
 setInterval(loadData,3000);
 setInterval(render,6000);
 
-// TIMELINE
+// ===== TIMELINE =====
 const timeline=[
  "1919 – Dibināta Talsu pamatskola",
  "1924 – Pirmie absolventi",
