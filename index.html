@@ -154,9 +154,9 @@ th { color: gold; }
 // ===== PULKSTENIS =====
 function updateClock(){
   const now=new Date();
+
   clockTime.textContent =
-    now.toLocaleTimeString("lv-LV",{hour:"2-digit"});
-  clockTime.textContent += ":" + now.toLocaleTimeString("lv-LV",{minute:"2-digit"});
+    now.toLocaleTimeString("lv-LV", {hour:"2-digit", minute:"2-digit"});
 
   clockDate.textContent =
     now.toLocaleDateString("lv-LV",{day:"numeric",month:"long"});
@@ -169,12 +169,15 @@ const CSV_URL="https://docs.google.com/spreadsheets/d/e/2PACX-1vR4zOLpFlQgPZ4Lf9
 
 const ROWS_PER_PAGE=5;
 
-let rows=[],page=0,lastCount=0;
+let rows=[];
+let page=0;
+let lastCount=0;
 
 // ===== LOAD DATA
 async function loadData(){
   const text=await (await fetch(CSV_URL)).text();
   const d=text.includes(";")?";":",";
+
   const lines=text.trim().split("\n");
 
   const newRows = lines.slice(1)
@@ -193,19 +196,17 @@ async function loadData(){
   }
 
   lastCount=newRows.length;
-  rows=newRows;
 
-  page=0; // ✅ svarīgi reset
-  render();
+  rows=newRows;
 }
 
-// ===== RENDER (STABILĀ VERSIJA)
+// ===== RENDER (STABILĀ)
 function render(){
 
   const total=Math.max(1,Math.ceil(rows.length/ROWS_PER_PAGE));
 
   if(page >= total){
-    page=0; // ✅ drošība
+    page=0;
   }
 
   tableBody.innerHTML="";
@@ -231,9 +232,10 @@ function loopRender(){
   setTimeout(loopRender,9000);
 }
 
-// POPUP
+// ===== POPUP
 function showPopup(name){
   popup.textContent="Jauns ieraksts – "+name;
+
   popup.classList.add("show");
 
   setTimeout(()=>{
@@ -246,7 +248,7 @@ loadData();
 setInterval(loadData,3000);
 loopRender();
 
-// TIMELINE
+// ===== TIMELINE
 const timeline=[
  "1919 – Dibināta skola",
  "1924 – Pirmie absolventi",
