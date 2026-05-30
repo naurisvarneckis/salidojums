@@ -9,7 +9,6 @@ body {
   margin: 0;
   font-family: Arial, Helvetica, sans-serif;
   color: #fff;
-  height: 100vh;
 
   background-image:
     linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.75)),
@@ -18,7 +17,7 @@ body {
   background-position: center;
 }
 
-/* ===== PULKSTENIS (mazāks un elegantāks) ===== */
+/* ===== PULKSTENIS ===== */
 #clockBox {
   position: fixed;
   top: 15px;
@@ -26,7 +25,6 @@ body {
   background: rgba(0,0,0,0.6);
   padding: 10px 16px;
   border-radius: 10px;
-  text-align: center;
 }
 #clockTime {
   font-size: 28px;
@@ -35,60 +33,60 @@ body {
 }
 #clockDate {
   font-size: 14px;
-  color: #ddd;
 }
 
-/* ===== SATURS ===== */
+/* ===== LAYOUT ===== */
 .main {
-  height: calc(100vh - 70px);
+  padding-top: 80px;
+  padding-bottom: 120px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  align-items: center;
 }
 
-/* ===== VIRSRaksts ===== */
 h1 {
-  text-align: center;
-  font-size: 40px;   /* 👈 mazāks */
-  margin-bottom: 20px;
-  letter-spacing: 1px;
+  font-size: 40px;
+  margin-bottom: 25px;
 }
 
 /* ===== TABULA ===== */
-.table-wrap {
-  display: flex;
-  justify-content: center;
-}
-
 table {
-  width: 700px;              /* 👈 šaurāks */
+  width: 700px;
   border-collapse: collapse;
-  font-size: 30px;
+  font-size: 28px;
   background: rgba(0,0,0,0.55);
   backdrop-filter: blur(6px);
   border-radius: 12px;
   overflow: hidden;
+  transition: opacity 0.8s ease;
 }
 
-/* kolonnas sabalansētas */
+.fade {
+  opacity: 0;
+}
+
 th:nth-child(1), td:nth-child(1) { width: 30%; }
 th:nth-child(2), td:nth-child(2) { width: 40%; }
 th:nth-child(3), td:nth-child(3) { width: 30%; text-align:center; }
 
 th, td {
-  padding: 14px 18px;
+  padding: 14px;
   border-bottom: 1px solid rgba(255,255,255,0.15);
 }
 
 th {
   color: #ffd700;
+  font-size: 24px;
+}
+
+/* ===== IZCELT JAUNĀKO ===== */
+.highlight {
+  background: rgba(255, 215, 0, 0.15);
   font-weight: bold;
-  font-size: 26px;
 }
 
 /* ===== FOOTER ===== */
 .footer {
-  text-align: center;
   margin-top: 10px;
   font-size: 18px;
   color: #ccc;
@@ -96,12 +94,14 @@ th {
 
 /* ===== TIMELINE ===== */
 #timeline {
+  position: fixed;
+  bottom: 0;
   width: 100%;
   padding: 14px;
   text-align: center;
   font-size: 22px;
   color: #ffd700;
-  background: rgba(0,0,0,0.6);
+  background: rgba(0,0,0,0.75);
 }
 </style>
 </head>
@@ -117,18 +117,16 @@ th {
 
   <h1>Ieradušies absolventi</h1>
 
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>Vārds</th>
-          <th>Uzvārds</th>
-          <th>Izlaiduma gads</th>
-        </tr>
-      </thead>
-      <tbody id="tableBody"></tbody>
-    </table>
-  </div>
+  <table id="table">
+    <thead>
+      <tr>
+        <th>Vārds</th>
+        <th>Uzvārds</th>
+        <th>Izlaiduma gads</th>
+      </tr>
+    </thead>
+    <tbody id="tableBody"></tbody>
+  </table>
 
   <div class="footer" id="pageInfo"></div>
 
@@ -139,76 +137,13 @@ th {
 </div>
 
 <script>
-// ===== PULKSTENIS
+/* ===== PULKSTENIS ===== */
 function updateClock() {
   const now = new Date();
   clockTime.textContent = now.toLocaleTimeString("lv-LV",{hour:"2-digit",minute:"2-digit"});
-  clockDate.textContent = now.toLocaleDateString("lv-LV",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
 }
 setInterval(updateClock,1000); updateClock();
 
-// ===== CSV
-const CSV_URL="https://docs.google.com/spreadsheets/d/e/2PACX-1vR4zOLpFlQgPZ4Lf9cKgWbMCxe8ZZtg2oc9QtE--1FpYK-YiaqBjaQY174sXey8b91m02OlRu-bD1Ax/pub?output=csv";
+clockDate.textContent = new Date().toLocaleDateString("lv-LV",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
 
-const ROWS_PER_PAGE=5;
-let rows=[],page=0;
-
-async function loadData(){
-  const text=await (await fetch(CSV_URL)).text();
-  const d=text.includes(";")?";":",";
-  const lines=text.trim().split("\n");
-
-  rows = lines.slice(1)
-    .map(r=>r.split(d))
-    .filter(r=>r[0])
-    .map(r=>({
-      vards:r[0],
-      uzvards:r[1],
-      gads:Number(r[2])
-    }))
-    .sort((a,b)=>a.gads-b.gads);
-
-  page=0;
-  render();
-}
-
-function render(){
-  tableBody.innerHTML="";
-  rows.slice(page*ROWS_PER_PAGE,(page+1)*ROWS_PER_PAGE)
-    .forEach(r=>{
-      tableBody.innerHTML+=`
-        <tr>
-          <td>${r.vards}</td>
-          <td>${r.uzvards}</td>
-          <td>${r.gads}</td>
-        </tr>`;
-    });
-
-  const total=Math.max(1,Math.ceil(rows.length/ROWS_PER_PAGE));
-  pageInfo.textContent=`Lapa ${page+1} no ${total} • Kopā ieradušies: ${rows.length}`;
-
-  page=(page+1)%total;
-}
-
-loadData();
-setInterval(loadData,30000);
-setInterval(render,7000);
-
-// ===== TIMELINE
-const timeline=[
- "1919 – Dibināta Talsu pamatskola",
- "1924–1925 – Pirmie absolventi",
- "1960–1980 – Skolas attīstība",
- "2022 – Skolas pārbūve",
- "2024 – Atjaunota skola",
- "2026 – Salidojums"
-];
-let i=0;
-setInterval(()=>{
-  timelineText.textContent=timeline[i];
-  i=(i+1)%timeline.length;
-},6000);
-</script>
-
-</body>
-</html>
+/* ===== CSV ===== */
