@@ -30,7 +30,7 @@ body {
 /* ===== POPUP ===== */
 #popup {
   position: fixed;
-  top: 50px;
+  top: 30px; /* ✅ augstāk */
   left: 50%;
   transform: translateX(-50%) translateY(-20px);
   background: rgba(0,0,0,0.9);
@@ -49,8 +49,8 @@ body {
 
 /* ===== LAYOUT ===== */
 .main {
-  padding-top: 110px;
-  padding-bottom: 140px; /* ✅ vieta priekš timeline */
+  padding-top: 90px;     /* ✅ labāks balanss */
+  padding-bottom: 140px; /* ✅ vieta timeline */
   text-align: center;
 }
 
@@ -75,12 +75,8 @@ th, td {
   padding: 14px;
   border-bottom: 1px solid rgba(255,255,255,0.2);
 }
+th { color:#ffd700; }
 
-th {
-  color: #ffd700;
-}
-
-/* ===== FOOTER ===== */
 .footer {
   margin-top: 12px;
   color: #ccc;
@@ -136,7 +132,7 @@ th {
 <script>
 // ===== PULKSTENIS =====
 function updateClock(){
-  const now = new Date();
+  const now=new Date();
   clockTime.textContent =
     now.toLocaleTimeString("lv-LV",{hour:"2-digit",minute:"2-digit"});
   clockDate.textContent =
@@ -167,7 +163,7 @@ async function loadData(){
       uzvards:r[1],
       gads:Number(r[2])
     }))
-    .sort((a,b)=>a.gads-b.gads); // ✅ globāli sakārtots
+    .sort((a,b)=>a.gads-b.gads); // ✅ vecākie → jaunākie
 
   if (newRows.length > lastCount) {
     const last = newRows[newRows.length - 1];
@@ -197,10 +193,9 @@ function render(){
   const total=Math.max(1,Math.ceil(rows.length/ROWS_PER_PAGE));
   pageInfo.textContent=`Lapa ${page+1} no ${total} • Kopā: ${rows.length}`;
 
-  // ✅ gudra lapu maiņa
   if (page === total - 1) {
     page = 0;
-    nextDelay = 16000; // ilgāka pēdējā lapa
+    nextDelay = 16000; // ✅ ilgāka pēdējā lapa
   } else {
     page++;
     nextDelay = 9000;
@@ -217,7 +212,7 @@ function loopRender(){
 function showPopup(name){
   const popup=document.getElementById("popup");
 
-  popup.textContent = "Jauns ieraksts – " + name;
+  popup.textContent="Jauns ieraksts – " + name;
 
   popup.classList.add("show");
 
